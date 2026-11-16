@@ -1,0 +1,473 @@
+<title>Alri GameCheck</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Saira:ital,wght@1,700;1,800&display=swap">
+<style>
+/* Layout: dark Alri casino lobby — italic display headline, KPI strip, error-type tiles, provider ledger, filterable game table. Single dark look, like alri.com. */
+:root{
+  color-scheme:dark;
+  --bg:#101112; --bg-2:#181919; --bg-3:#212223; --line:#2f3132; --edge:#383a3b;
+  --fg:#edeeee; --fg-2:#b0b4b6; --fg-3:#9ea2a4; --faint:#686e70;
+  --green:#41dd6d; --green-ink:#0c130d; --green-soft:#46a758; --green-deep:#182c12;
+  --amber:#ffca2f; --amber-ink:#463a20;
+  --red:#e54d2e; --blue:#0090ff; --teal:#4cc3b6; --tan:#dab682;
+  --display:"Saira","Arial Narrow",system-ui,sans-serif;
+  --body:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:var(--green)}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+
+/* top bar */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:12px}
+.mark{font-weight:800;font-size:22px;letter-spacing:-.04em;color:var(--fg)}
+.mark span{color:var(--green)}
+.tag{font-size:12px;font-weight:600;color:var(--fg-2);padding-left:12px;border-left:1px solid var(--edge)}
+.top .sp{flex:1}
+.run{display:inline-flex;align-items:center;gap:6px;background:var(--green-soft);color:#fbfefb;font-weight:500;font-size:12px;padding:5px 12px;border-radius:999px}
+.run i{width:7px;height:7px;border-radius:50%;background:#fbfefb}
+
+/* hero */
+.hero{padding-block:36px 28px;background:radial-gradient(ellipse 60% 120% at 85% 0%,color-mix(in srgb,var(--green) 16%,transparent),transparent 70%)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);margin:0 0 10px}
+h1{font-family:var(--display);font-style:italic;font-weight:800;text-transform:uppercase;line-height:.95;margin:0;font-size:clamp(36px,7vw,72px);letter-spacing:-.01em;text-wrap:balance}
+h1 .a{color:var(--amber)} h1 .g{color:var(--green);display:block;font-size:.55em;margin-top:.3em}
+.lead{color:var(--fg-2);max-width:62ch;margin:16px 0 0;font-size:15px}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:28px}
+.kpi{background:var(--bg-2);padding:16px 18px;min-width:0}
+.kpi b{display:block;font-family:var(--display);font-style:italic;font-weight:800;font-size:32px;line-height:1;font-variant-numeric:tabular-nums}
+.kpi span{display:block;color:var(--fg-3);font-size:12px;margin-top:6px}
+.kpi.ok b{color:var(--green)} .kpi.bad b{color:var(--amber)}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi:last-child{grid-column:span 2}}
+
+section{padding-block:28px}
+h2{font-family:var(--display);font-style:italic;font-weight:800;text-transform:uppercase;font-size:24px;margin:0 0 4px;letter-spacing:.01em}
+.h2sub{color:var(--fg-3);margin:0 0 16px;font-size:13px}
+
+/* error types */
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.type{all:unset;box-sizing:border-box;cursor:pointer;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;transition:border-color .15s,background .15s}
+.type:hover{border-color:var(--edge);background:var(--bg-3)}
+.type.on{border-color:var(--c)}
+.type:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.type .row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.type .n{font-family:var(--display);font-style:italic;font-weight:800;font-size:34px;line-height:1;color:var(--c);font-variant-numeric:tabular-nums}
+.type .pct{color:var(--fg-3);font-size:12px;font-variant-numeric:tabular-nums}
+.type p{margin:0;color:var(--fg-2);font-size:12.5px}
+.type .prov{font-size:12px;color:var(--fg-3)}
+.type .prov b{color:var(--fg);font-weight:600}
+
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c)}
+
+/* providers */
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.switch{display:inline-flex;align-items:center;gap:8px;color:var(--fg-2);font-size:13px;cursor:pointer;user-select:none}
+.switch input{appearance:none;width:34px;height:20px;border-radius:999px;background:var(--edge);position:relative;cursor:pointer;margin:0;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--fg);transition:transform .15s}
+.switch input:checked{background:var(--green)}
+.switch input:checked::after{transform:translateX(14px);background:var(--green-ink)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-3);padding:11px 14px;border-bottom:1px solid var(--line);background:var(--bg-2);white-space:nowrap;position:sticky;top:0}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg-3)}
+.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.prow{cursor:pointer}
+.prow.sel td{background:color-mix(in srgb,var(--green) 8%,transparent)}
+.pname{font-weight:600;white-space:nowrap}
+.fails b{font-family:var(--display);font-style:italic;font-weight:800;font-size:18px;color:var(--amber)}
+.fails.zero b{color:var(--faint)}
+.fails span{color:var(--fg-3)}
+.bar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:var(--bg-3);min-width:140px}
+.bar i{display:block;height:100%}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.rate{font-weight:600}
+.rate.hi{color:var(--red)} .rate.mid{color:var(--amber)} .rate.lo{color:var(--fg-2)} .rate.none{color:var(--faint)}
+
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+select,input[type=search]{font:inherit;color:var(--fg);background:var(--bg-2);border:1px solid var(--edge);border-radius:8px;padding:8px 12px;min-width:0}
+select{padding-right:30px;cursor:pointer}
+input[type=search]{flex:1 1 220px}
+select:focus,input[type=search]:focus{outline:none;border-color:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:12.5px;font-weight:600;color:var(--fg-2);background:transparent;border:1px solid var(--edge);border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip:hover{color:var(--fg);border-color:var(--fg-3)}
+.chip.on{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.chip small{font-weight:500;opacity:.75;margin-left:4px;font-variant-numeric:tabular-nums}
+.btn-clear{font:inherit;font-size:12.5px;font-weight:500;background:none;border:none;color:var(--green);cursor:pointer;padding:6px 4px}
+.count{color:var(--fg-3);font-size:13px;margin:0 0 10px}
+.count b{color:var(--fg)}
+.gname{font-weight:600}
+.detail{color:var(--fg-2);font-size:12.5px;max-width:420px}
+.host{color:var(--fg-3);font-size:12px;white-space:nowrap}
+.open{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:var(--green-ink);font-weight:600;font-size:12px;padding:6px 12px;border-radius:8px;text-decoration:none;white-space:nowrap}
+.open:hover{background:#30d262}
+.dl{font:inherit;font-size:12.5px;font-weight:600;background:var(--green);color:var(--green-ink);border:1px solid var(--green);border-radius:8px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.dl:hover{background:#30d262}
+.dl.ghost{background:transparent;color:var(--green)}
+.dl.ghost:hover{background:color-mix(in srgb,var(--green) 12%,transparent)}
+.dl:disabled{opacity:.5;cursor:default}
+.countrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.countrow .count{margin:0}
+.dlmsg{margin:0 0 10px;font-size:12.5px;color:var(--fg-3);min-height:0}
+.dlmsg:empty{display:none}
+.empty{padding:36px;text-align:center;color:var(--fg-3)}
+.games-scroll{max-height:720px;overflow:auto}
+
+/* glossary */
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 24px;color:var(--fg-2);font-size:12.5px}
+.gloss div{display:flex;gap:10px;align-items:flex-start}
+.gloss code{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--fg);background:var(--bg-3);padding:2px 6px;border-radius:4px;white-space:nowrap}
+footer{border-top:1px solid var(--line);color:var(--faint);font-size:12px;padding-block:20px 32px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* run picker + diff vs previous run */
+.runsel{font:inherit;font-size:12px;font-weight:600;color:#fbfefb;background:var(--green-soft);border:none;border-radius:999px;padding:5px 30px 5px 12px;cursor:pointer}
+.runsel option{color:var(--fg);background:var(--bg-2)}
+.diff{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.dcol{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.dcol h3{margin:0 0 10px;font-size:13px;font-weight:700;color:var(--fg)}
+.dcol h3 small{color:var(--fg-3);font-weight:600;margin-left:6px;font-variant-numeric:tabular-nums}
+.dl-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto}
+.dl-list li{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font-size:13px}
+.dl-list a{color:var(--fg);font-weight:600;text-decoration:none}
+.dl-list a:hover{color:var(--green)}
+.dl-list .dp{color:var(--fg-3);font-size:12px}
+.dl-list .dt{display:inline-flex;align-items:center;gap:4px;color:var(--fg-3);font-size:12px}
+.dempty{margin:0;color:var(--fg-3);font-size:13px}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="mark">alri<span>.</span></div>
+  <div class="tag">GameCheck · Monitor de jogos</div>
+  <div class="sp"></div>
+  <div class="run" id="runPill"><i></i><span id="runDate"></span></div>
+  <select id="runSel" class="runsel" aria-label="Escolher run" hidden></select>
+  <button type="button" class="dl" id="dlAll" hidden>Baixar CSV ↓</button>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <p class="eyebrow">Relatório de falhas de lançamento · alri.com/casino</p>
+  <h1><span class="a" id="hFails"></span> jogos com falha<span class="g" id="hSub"></span></h1>
+  <p class="lead" id="lead">Carregando resultados…</p>
+  <div class="kpis" id="kpis"></div>
+</div></div>
+
+<section id="diffSec" hidden><div class="wrap">
+  <h2 id="diffTitle">Mudou desde a run anterior</h2>
+  <p class="h2sub" id="diffSub"></p>
+  <div class="diff" id="diffBody"></div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Tipos de erro</h2>
+  <p class="h2sub">Clique em um tipo para filtrar a lista de jogos.</p>
+  <div class="types" id="types"></div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="tools">
+    <div>
+      <h2>Falhas por provedor</h2>
+      <p class="h2sub" style="margin:0">Jogos com falha sobre o total verificado do provedor. Clique em uma linha para ver os jogos.</p>
+    </div>
+    <label class="switch"><input type="checkbox" id="showAll"> Mostrar provedores sem falha</label>
+  </div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Provedor</th><th class="num">Falhas / total</th><th>Distribuição</th><th>Tipos de erro</th><th class="num">% com falha</th></tr></thead>
+      <tbody id="provBody"></tbody>
+    </table>
+  </div>
+</div></section>
+
+<section id="jogos"><div class="wrap">
+  <h2>Jogos</h2>
+  <p class="h2sub">Lista completa com link direto para o jogo na Alri.</p>
+  <div class="filters">
+    <select id="fProv" aria-label="Provedor"></select>
+    <select id="fScope" aria-label="Escopo">
+      <option value="fail">Somente com falha</option>
+      <option value="all">Todos os jogos</option>
+      <option value="ok">Somente OK</option>
+    </select>
+    <input type="search" id="fSearch" placeholder="Buscar jogo, detalhe ou host">
+  </div>
+  <div class="filters">
+    <div class="chips" id="fTypes"></div>
+    <button class="btn-clear" id="clear" type="button">Limpar filtros</button>
+  </div>
+  <div class="countrow"><p class="count" id="count"></p><button type="button" class="dl ghost" id="dlView" hidden>Baixar esta lista (CSV) ↓</button></div>
+  <p class="dlmsg" id="dlMsg" role="status"></p>
+  <div class="scroll games-scroll">
+    <table>
+      <thead><tr><th>Jogo</th><th>Provedor</th><th>Status</th><th>Detalhe</th><th>Launch</th><th class="num">Tempo</th><th></th></tr></thead>
+      <tbody id="gameBody"></tbody>
+    </table>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Como ler os status</h2>
+  <p class="h2sub">Cada jogo é aberto logado em Chrome real: a página chama <code style="font-size:12px">POST api.pam.alri.com/api/v1/games/play</code> e o checker inspeciona o iframe do provedor.</p>
+  <div class="gloss" id="gloss"></div>
+</div></section>
+
+<footer><div class="wrap" id="foot"></div></footer>
+
+<script>
+const BASE="https://alri.com/casino/games/";
+
+const TYPES={
+  ERRO_ALEA:{l:"Erro Alea",c:"var(--red)",d:"O agregador Alea devolveu tela de erro com TraceId no lugar do jogo."},
+  ERRO_IFRAME:{l:"Erro iframe",c:"var(--amber)",d:"O iframe do provedor abriu, mas exibe mensagem de erro (ex.: “Something went wrong”)."},
+  ERRO_REDE:{l:"Erro de rede",c:"var(--blue)",d:"O iframe do provedor não conectou: o host do jogo encerrou a conexão."},
+  SESSAO_EXPIRADA:{l:"Sessão expirada",c:"var(--teal)",d:"O launch foi recusado com HTTP 401 (token expirado)."},
+  NAO_CARREGOU:{l:"Não carregou",c:"var(--tan)",d:"A página do jogo não montou nenhum iframe."},
+  ERRO_404:{l:"Erro 404",c:"#ff8a65",d:"A página do jogo não existe."},
+  ERRO_HTTP:{l:"Erro HTTP",c:"#f06292",d:"O launch respondeu com erro HTTP."},
+  ERRO_LAUNCH:{l:"Erro de launch",c:"#ba68c8",d:"A API de play respondeu com código de erro."},
+  BLOQUEADO:{l:"Bloqueado",c:"#90a4ae",d:"Jogo bloqueado para a conta ou região."},
+  KYC:{l:"KYC",c:"#9575cd",d:"O launch exige verificação de identidade."},
+  INCONCLUSIVO:{l:"Inconclusivo",c:"#9ea2a4",d:"TraceId na Evolution: a conta de teste é bloqueada depois de ~2 mesas seguidas. Não conta como falha; manualmente os jogos abrem."},
+  TIMEOUT:{l:"Timeout",c:"#9ea2a4",d:"O jogo não respondeu no tempo limite. Não conta como falha; rechecar."},
+  SEM_LAUNCH:{l:"Sem launch",c:"#9ea2a4",d:"A página não chamou a API de play. Não conta como falha; rechecar."},
+  SITE_INACESSIVEL:{l:"Site inacessível",c:"#9ea2a4",d:"A própria página da Alri recusou a conexão. Não conta como falha; rechecar."},
+  COMING_SOON:{l:"Coming soon",c:"#9ea2a4",d:"Jogo marcado como em breve na plataforma. Não conta como falha."},
+  OK:{l:"OK",c:"var(--green)",d:"Launch OK e iframe do provedor carregou."}
+};
+/* status que nao sao falha confirmada: aparecem na lista, mas fora da contagem */
+const RECHECK=new Set(["INCONCLUSIVO","TIMEOUT","SEM_LAUNCH","SITE_INACESSIVEL","COMING_SOON"]);
+const T=s=>TYPES[s]||{l:s.replace(/_/g," ").toLowerCase(),c:"var(--fg-3)",d:""};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=n=>n.toLocaleString("pt-BR");
+const pct=(a,b,d=1)=>b?(a/b*100).toLocaleString("pt-BR",{minimumFractionDigits:d,maximumFractionDigits:d})+"%":"–";
+const pill=s=>`<span class="pill" style="--c:${T(s).c}">${esc(T(s).l)}</span>`;
+const isFail=s=>s!=="OK"&&!RECHECK.has(s);
+const dmy=iso=>{const [y,m,d]=iso.split("-");return `${d}/${m}/${y}`};
+const $=id=>document.getElementById(id);
+
+/* run atual (preenchido em load) */
+let RUNS=[],RUN_DATE="",games=[],fails=[],nok=[],provs=[],byProv={},types=[],prevRun=null;
+const st={prov:"",types:new Set(),scope:"fail",q:""};
+
+function setRun(idx){
+  const run=RUNS[idx];RUN_DATE=run.date;prevRun=RUNS[idx+1]||null;
+  games=run.rows.map(r=>({p:r[0],n:r[1],slug:r[2],s:r[3],d:r[4],h:r[5],http:r[6],ms:r[7],gc:r[8]||""}));
+  fails=games.filter(g=>isFail(g.s));
+  nok=games.filter(g=>g.s!=="OK");
+  byProv={};
+  for(const g of games){const p=byProv[g.p]||(byProv[g.p]={name:g.p,total:0,fail:0,nok:0,types:{}});p.total++;if(g.s!=="OK"){p.nok++;p.types[g.s]=(p.types[g.s]||0)+1;if(isFail(g.s))p.fail++}}
+  provs=Object.values(byProv).sort((a,b)=>b.fail-a.fail||b.nok-a.nok||b.fail/b.total-a.fail/a.total||b.total-a.total);
+  const byType={};
+  for(const g of nok){const t=byType[g.s]||(byType[g.s]={s:g.s,n:0,provs:{}});t.n++;t.provs[g.p]=(t.provs[g.p]||0)+1}
+  types=Object.values(byType).sort((a,b)=>isFail(b.s)-isFail(a.s)||b.n-a.n);
+  st.prov="";st.types.clear();st.scope="fail";st.q="";$("fSearch").value="";
+  renderHead();renderDiff();renderProvOptions();sync();
+  $("foot").textContent=`Fonte: GameCheck Alri · resultado_${RUN_DATE}.csv · ${games.length} jogos coletados nas páginas de provedores de alri.com. Conta de teste logada, launch via API PAM da Alri. ${RUNS.length} runs no histórico.`;
+}
+
+/* header + kpis */
+function renderHead(){
+  const okN=games.length-nok.length,inc=nok.length-fails.length;
+  const affected=provs.filter(p=>p.fail).length;
+  $("runDate").textContent=`Run ${dmy(RUN_DATE)}`;
+  $("hFails").textContent=fmt(fails.length);
+  $("hSub").textContent=`de ${fmt(games.length)} verificados · ${pct(okN,games.length)} OK`;
+  const realTypes=types.filter(t=>isFail(t.s));
+  const lead0=realTypes[0];
+  let lead=lead0?`${affected} de ${provs.length} provedores têm pelo menos um jogo com falha. ${T(lead0.s).l} responde por ${pct(lead0.n,fails.length,0)} das falhas, concentrado em ${Object.entries(lead0.provs).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0]).join(" e ")}.`:"Nenhum jogo com falha confirmada nesta run.";
+  if(inc)lead+=` ${fmt(inc)} jogo${inc===1?"":"s"} ficou fora da contagem por resultado inconclusivo.`;
+  if(prevRun){const pf=prevRun.rows.filter(r=>isFail(r[3])).length;const dv=fails.length-pf;lead+=` Na run de ${dmy(prevRun.date)} eram ${fmt(pf)} (${dv>0?"+":""}${fmt(dv)}).`}
+  $("lead").textContent=lead;
+  $("kpis").innerHTML=[
+    ["",fmt(games.length),"jogos verificados"],
+    ["ok",fmt(okN),"abriram normalmente"],
+    ["bad",fmt(fails.length),"jogos com falha"],
+    ["",fmt(inc),"inconclusivos / recheck"],
+    ["bad",`${affected}/${provs.length}`,"provedores com falha"]
+  ].map(([c,v,l])=>`<div class="kpi ${c}"><b>${v}</b><span>${l}</span></div>`).join("");
+}
+
+/* mudancas vs run anterior */
+function renderDiff(){
+  const sec=$("diffSec");
+  if(!prevRun){sec.hidden=true;return}
+  sec.hidden=false;
+  $("diffTitle").textContent=`Mudou desde ${dmy(prevRun.date)}`;
+  const prev={};for(const r of prevRun.rows)prev[r[2]]={p:r[0],n:r[1],s:r[3]};
+  const cur={};for(const g of games)cur[g.slug]=g;
+  const piorou=[],melhorou=[],outros=[];
+  for(const g of games){const o=prev[g.slug];if(!o||o.s===g.s)continue;
+    const a=isFail(o.s),b=isFail(g.s);
+    (b&&!a?piorou:a&&!b?melhorou:outros).push({p:g.p,n:g.n,slug:g.slug,de:o.s,para:g.s})}
+  const novos=games.filter(g=>!prev[g.slug]).length;
+  const saiu=prevRun.rows.filter(r=>!cur[r[2]]);
+  const saiuProv={};for(const r of saiu)saiuProv[r[0]]=(saiuProv[r[0]]||0)+1;
+  const list=(arr,empty)=>arr.length?`<ul class="dl-list">${arr.sort((a,b)=>a.p.localeCompare(b.p)||a.n.localeCompare(b.n)).map(x=>`<li><a href="${BASE}${encodeURI(x.slug)}/" target="_blank" rel="noopener">${esc(x.n)}</a> <span class="dp">${esc(x.p)}</span><span class="dt">${pill(x.de)} → ${pill(x.para)}</span></li>`).join("")}</ul>`:`<p class="dempty">${empty}</p>`;
+  const cat=[];
+  if(novos)cat.push(`${fmt(novos)} jogo${novos===1?" novo":"s novos"} no catálogo`);
+  if(saiu.length)cat.push(`${fmt(saiu.length)} removido${saiu.length===1?"":"s"} (${Object.entries(saiuProv).map(([p,n])=>`${esc(p)} ${n}`).join(", ")})`);
+  $("diffSub").innerHTML=cat.length?cat.join(" · ")+".":"Catálogo igual ao da run anterior.";
+  $("diffBody").innerHTML=`
+    <div class="dcol"><h3>Passaram a falhar <small>${fmt(piorou.length)}</small></h3>${list(piorou,"Nenhum jogo novo com falha.")}</div>
+    <div class="dcol"><h3>Voltaram a funcionar <small>${fmt(melhorou.length)}</small></h3>${list(melhorou,"Nenhum jogo se recuperou.")}</div>
+    ${outros.length?`<div class="dcol"><h3>Outras mudanças de status <small>${fmt(outros.length)}</small></h3>${list(outros,"")}</div>`:""}`;
+}
+
+/* type tiles */
+function renderTypes(){
+  $("types").innerHTML=types.map(t=>{
+    const pv=Object.entries(t.provs).sort((a,b)=>b[1]-a[1]).map(([p,n])=>`<b>${esc(p)}</b> ${n}`).join(" · ");
+    const share=isFail(t.s)?`${pct(t.n,fails.length,0)} das falhas`:"fora da contagem";
+    return `<button type="button" class="type ${st.types.has(t.s)?"on":""}" data-t="${t.s}" style="--c:${T(t.s).c}" aria-pressed="${st.types.has(t.s)}">
+      <div class="row">${pill(t.s)}<span class="pct">${share}</span></div>
+      <div class="n">${fmt(t.n)}</div>
+      <p>${esc(T(t.s).d)}</p>
+      <div class="prov">${pv}</div></button>`}).join("")||`<p class="h2sub">Nenhum erro nesta run.</p>`;
+}
+$("types").addEventListener("click",e=>{
+  const b=e.target.closest(".type");if(!b)return;
+  const t=b.dataset.t;
+  if(st.types.size===1&&st.types.has(t))st.types.clear();else{st.types.clear();st.types.add(t)}
+  if(st.scope==="ok")st.scope="fail";
+  sync();jump();
+});
+
+/* providers */
+function renderProvs(){
+  const all=$("showAll").checked;
+  const list=provs.filter(p=>all||p.nok);
+  $("provBody").innerHTML=list.map(p=>{
+    const segs=Object.entries(p.types).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<i style="width:${n/p.total*100}%;background:${T(s).c}" title="${esc(T(s).l)}: ${n}"></i>`).join("")+`<i style="width:${(p.total-p.nok)/p.total*100}%;background:color-mix(in srgb,var(--green) 35%,transparent)" title="OK: ${p.total-p.nok}"></i>`;
+    const r=p.fail/p.total;const rc=!p.fail?"none":r>=.5?"hi":r>=.1?"mid":"lo";
+    const pl=Object.entries(p.types).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<span class="pill" style="--c:${T(s).c}">${esc(T(s).l)} · ${n}</span>`).join("")||`<span class="pill" style="--c:var(--green)">Sem falhas</span>`;
+    return `<tr class="prow ${st.prov===p.name?"sel":""}" data-p="${esc(p.name)}" tabindex="0">
+      <td class="pname">${esc(p.name)}</td>
+      <td class="num fails ${p.fail?"":"zero"}"><b>${p.fail}</b> <span>/ ${p.total}</span></td>
+      <td><div class="bar">${segs}</div></td>
+      <td><div class="pills">${pl}</div></td>
+      <td class="num rate ${rc}">${pct(p.fail,p.total)}</td></tr>`}).join("");
+}
+$("showAll").addEventListener("change",renderProvs);
+const pickProv=tr=>{const p=tr.dataset.p;st.prov=st.prov===p?"":p;const pv=byProv[p];if(st.prov&&pv&&!pv.nok)st.scope="all";sync();if(st.prov)jump()};
+$("provBody").addEventListener("click",e=>{const tr=e.target.closest(".prow");if(tr)pickProv(tr)});
+$("provBody").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){const tr=e.target.closest(".prow");if(tr){e.preventDefault();pickProv(tr)}}});
+
+/* filters */
+const fProv=$("fProv"),fScope=$("fScope"),fSearch=$("fSearch");
+function renderProvOptions(){
+  fProv.innerHTML=`<option value="">Todos os provedores (${provs.length})</option>`+[...provs].sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} — ${p.fail}/${p.total}</option>`).join("");
+}
+fProv.addEventListener("change",()=>{st.prov=fProv.value;sync()});
+fScope.addEventListener("change",()=>{st.scope=fScope.value;if(st.scope==="ok")st.types.clear();sync()});
+fSearch.addEventListener("input",()=>{st.q=fSearch.value.trim().toLowerCase();renderGames()});
+$("clear").addEventListener("click",()=>{st.prov="";st.types.clear();st.scope="fail";st.q="";fSearch.value="";sync()});
+$("fTypes").addEventListener("click",e=>{
+  const b=e.target.closest(".chip");if(!b)return;const t=b.dataset.t;
+  if(!t)st.types.clear();else st.types.has(t)?st.types.delete(t):st.types.add(t);
+  if(st.types.size&&st.scope==="ok")st.scope="fail";
+  sync();
+});
+function renderChips(){
+  const pool=st.prov?nok.filter(g=>g.p===st.prov):nok;
+  const cnt={};for(const g of pool)cnt[g.s]=(cnt[g.s]||0)+1;
+  $("fTypes").innerHTML=`<button type="button" class="chip ${st.types.size?"":"on"}" data-t="">Todos os erros<small>${pool.length}</small></button>`+
+    types.map(t=>`<button type="button" class="chip ${st.types.has(t.s)?"on":""}" data-t="${t.s}" aria-pressed="${st.types.has(t.s)}">${esc(T(t.s).l)}<small>${cnt[t.s]||0}</small></button>`).join("");
+}
+let currentList=[];
+function renderGames(){
+  const q=st.q;
+  const list=games.filter(g=>{
+    if(st.prov&&g.p!==st.prov)return false;
+    if(st.scope==="fail"&&g.s==="OK")return false;
+    if(st.scope==="ok"&&g.s!=="OK")return false;
+    if(st.types.size&&!st.types.has(g.s))return false;
+    if(q&&!(g.n+" "+g.p+" "+g.d+" "+g.h+" "+g.slug).toLowerCase().includes(q))return false;
+    return true;
+  }).sort((a,b)=>isFail(b.s)-isFail(a.s)||(a.s==="OK")-(b.s==="OK")||a.p.localeCompare(b.p)||a.n.localeCompare(b.n));
+  currentList=list;
+  const nf=list.filter(g=>isFail(g.s)).length;
+  const parts=[];if(st.prov)parts.push(st.prov);if(st.types.size)parts.push([...st.types].map(s=>T(s).l).join(", "));
+  $("count").innerHTML=`<b>${fmt(list.length)}</b> jogo${list.length===1?"":"s"}${nf&&nf!==list.length?` · <b>${fmt(nf)}</b> com falha`:""}${parts.length?` · ${esc(parts.join(" · "))}`:""}`;
+  $("gameBody").innerHTML=list.length?list.map(g=>`<tr>
+    <td class="gname">${esc(g.n)}</td>
+    <td style="white-space:nowrap">${esc(g.p)}</td>
+    <td>${pill(g.s)}</td>
+    <td class="detail">${esc(g.d||"Launch OK, iframe carregou")}</td>
+    <td class="host">${g.h?esc(g.h):"–"}${g.http?` · ${esc(g.http)}`:""}</td>
+    <td class="num host">${g.ms?(g.ms/1000).toLocaleString("pt-BR",{maximumFractionDigits:1})+" s":"–"}</td>
+    <td><a class="open" href="${BASE}${encodeURI(g.slug)}/" target="_blank" rel="noopener">Abrir jogo ↗</a></td></tr>`).join("")
+    :`<tr><td colspan="7" class="empty">Nenhum jogo com esses filtros. Use “Limpar filtros” para voltar à lista completa.</td></tr>`;
+}
+
+/* downloads */
+const csvCell=v=>{v=String(v??"");return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+function toCsv(list){
+  const head=["data","provedor","nome","game_code","url_jogo","status","tipo_erro","detalhe","launch_host","http_launch","tempo_ms"];
+  const lines=list.map(g=>[RUN_DATE,g.p,g.n,g.gc,BASE+g.slug+"/",g.s,T(g.s).l,g.d,g.h,g.http,g.ms].map(csvCell).join(","));
+  return "﻿"+[head.join(","),...lines].join("\r\n")+"\r\n";
+}
+const slugify=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-|-$/g,"").toLowerCase();
+const dlMsg=$("dlMsg");
+async function saveFile(dl,btn,filename,data){
+  btn.disabled=true;dlMsg.textContent="";
+  try{await dl.save({filename,data});dlMsg.textContent=`${filename} salvo.`}
+  catch(e){
+    const c=e&&e.code;
+    if(c==="declined"){}
+    else if(c==="rate_limited")dlMsg.textContent="Já existe um download aguardando confirmação. Conclua ou cancele e tente de novo.";
+    else{dlMsg.textContent="Download indisponível nesta visualização.";$("dlAll").hidden=true;$("dlView").hidden=true}
+  }finally{btn.disabled=false}
+}
+(async()=>{
+  const dl=await window.claude?.use?.("downloads").catch(()=>null);
+  if(!dl)return;
+  const a=$("dlAll"),v=$("dlView");
+  a.hidden=false;v.hidden=false;
+  a.addEventListener("click",()=>saveFile(dl,a,`alri_resultado_${RUN_DATE}.csv`,toCsv(games)));
+  v.addEventListener("click",()=>{
+    const parts=[st.prov&&slugify(st.prov),...[...st.types].map(s=>slugify(T(s).l)),st.scope==="fail"?"falhas":st.scope==="ok"?"ok":"todos"].filter(Boolean);
+    saveFile(dl,v,`alri_${RUN_DATE}_${parts.join("_")}.csv`,toCsv(currentList));
+  });
+})();
+function sync(){fProv.value=st.prov;fScope.value=st.scope;renderTypes();renderProvs();renderChips();renderGames()}
+function jump(){const el=$("jogos");const y=el.getBoundingClientRect().top+scrollY-64;scrollTo({top:y,behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"})}
+
+/* glossary */
+$("gloss").innerHTML=Object.entries(TYPES).map(([k,v])=>`<div>${pill(k)}<span>${esc(v.d)}</span></div>`).join("");
+
+/* run escolhida fica no link: #run-AAAA-MM-DD */
+const runSel=$("runSel");
+const idxFromHash=()=>{const m=/^#run-(\d{4}-\d{2}-\d{2})$/.exec(location.hash);const i=m?RUNS.findIndex(r=>r.date===m[1]):-1;return i<0?0:i};
+runSel.addEventListener("change",()=>{const i=+runSel.value;history.replaceState(null,"",i?`#run-${RUNS[i].date}`:location.pathname+location.search);setRun(i)});
+addEventListener("hashchange",()=>{if(!RUNS.length)return;const i=idxFromHash();runSel.value=i;setRun(i)});
+
+(async()=>{
+  try{
+    const r=await fetch("runs.json",{cache:"no-store"});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    RUNS=(await r.json()).runs||[];
+    if(!RUNS.length)throw new Error("sem runs");
+  }catch(e){
+    $("hFails").textContent="–";$("hSub").textContent="";
+    $("lead").textContent="Não foi possível carregar os resultados (runs.json). Recarregue a página; se continuar, o arquivo de dados não foi publicado.";
+    return;
+  }
+  runSel.innerHTML=RUNS.map((r,i)=>`<option value="${i}">Run ${dmy(r.date)}${i===0?" · mais recente":""}</option>`).join("");
+  runSel.hidden=RUNS.length<2;
+  $("runPill").hidden=RUNS.length>=2;
+  const i=idxFromHash();runSel.value=i;setRun(i);
+})();
+</script>
+

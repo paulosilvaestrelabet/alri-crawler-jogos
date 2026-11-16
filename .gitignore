@@ -1,0 +1,19 @@
+# ambiente local
+.venv/
+__pycache__/
+*.pyc
+.claude/settings.local.json
+
+# credenciais (use config/.env.example como modelo)
+config/.env
+
+# sessoes, resultados, capturas de rede e planilhas: tokens e dados internos
+data/**
+!data/**/
+!data/resultados/.gitkeep
+!data/alri/resultados/.gitkeep
+public/
+
+# dashboards gerados a cada run (contem resultados)
+dashboard/index.html
+dashboard/alri.html
